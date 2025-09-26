@@ -1,0 +1,128 @@
+# ===== templates/booking_confirmation_ar.html =====
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تأكيد الحجز - وكالة دبي للسفر</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f4f4f4;
+            direction: rtl;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            border-bottom: 3px solid #007bff;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        .header h1 {
+            color: #007bff;
+            margin: 0;
+            font-size: 28px;
+        }
+        .booking-details {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+        .detail-row:last-child {
+            border-bottom: none;
+        }
+        .label {
+            font-weight: bold;
+            color: #495057;
+        }
+        .value {
+            color: #007bff;
+            font-weight: 500;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #e9ecef;
+            color: #6c757d;
+        }
+        .contact-info {
+            background: #e7f3ff;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏜️ وكالة دبي للسفر</h1>
+            <p>مغامرتك تبدأ هنا!</p>
+        </div>
+        
+        <h2>✅ تم تأكيد الحجز!</h2>
+        <p>عزيزي/عزيزتي {{ user_name }}،</p>
+        <p>شكراً لاختيارك وكالة دبي للسفر! تم تأكيد حجزك بنجاح.</p>
+        
+        <div class="booking-details">
+            <h3>📋 تفاصيل الحجز</h3>
+            <div class="detail-row">
+                <span class="label">رقم المرجع:</span>
+                <span class="value">{{ booking_reference }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="label">الباقة:</span>
+                <span class="value">{{ package_title }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="label">تاريخ السفر:</span>
+                <span class="value">{{ travel_date }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="label">عدد المسافرين:</span>
+                <span class="value">{{ travelers_count }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="label">المبلغ الإجمالي:</span>
+                <span class="value">{{ total_price }} درهم</span>
+            </div>
+            <div class="detail-row">
+                <span class="label">طريقة الدفع:</span>
+                <span class="value">{{ payment_method|title }}</span>
+            </div>
+        </div>
+        
+        <div class="contact-info">
+            <h3>📞 تحتاج مساعدة؟</h3>
+            <p><strong>البريد الإلكتروني:</strong> support@dubaitravel.com</p>
+            <p><strong>الهاتف:</strong> +971-4-XXX-XXXX</p>
+            <p><strong>واتساب:</strong> +971-50-XXX-XXXX</p>
+        </div>
+        
+        <p>سنتواصل معك قبل 24 ساعة من تاريخ سفرك بتفاصيل الاستقبال والتعليمات النهائية.</p>
+        
+        <div class="footer">
+            <p>شكراً لاختيارك وكالة دبي للسفر!</p>
+            <p><small>هذا بريد إلكتروني تلقائي. يرجى عدم الرد على هذه الرسالة.</small></p>
+        </div>
+    </div>
+</body>
+</html>

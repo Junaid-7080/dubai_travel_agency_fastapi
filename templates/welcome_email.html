@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to Dubai Travel Agency</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            border-bottom: 3px solid #007bff;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        .header h1 {
+            color: #007bff;
+            margin: 0;
+            font-size: 28px;
+        }
+        .welcome-content {
+            text-align: center;
+            margin: 30px 0;
+        }
+        .features {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .feature-item {
+            display: flex;
+            align-items: center;
+            margin: 10px 0;
+        }
+        .feature-icon {
+            font-size: 20px;
+            margin-right: 10px;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #e9ecef;
+            color: #6c757d;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏜️ Dubai Travel Agency</h1>
+            <p>Your Gateway to Amazing Adventures!</p>
+        </div>
+        
+        <div class="welcome-content">
+            <h2>Welcome, {{ user_name }}! 🎉</h2>
+            <p>Thank you for joining Dubai Travel Agency! We're excited to help you discover the wonders of Dubai and beyond.</p>
+        </div>
+        
+        <div class="features">
+            <h3>🌟 What you can do with us:</h3>
+            <div class="feature-item">
+                <span class="feature-icon">✈️</span>
+                <span>Browse amazing travel packages</span>
+            </div>
+            <div class="feature-item">
+                <span class="feature-icon">📱</span>
+                <span>Easy online booking system</span>
+            </div>
+            <div class="feature-item">
+                <span class="feature-icon">💳</span>
+                <span>Secure payment options</span>
+            </div>
+            <div class="feature-item">
+                <span class="feature-icon">📧</span>
+                <span>Instant booking confirmations</span>
+            </div>
+            <div class="feature-item">
+                <span class="feature-icon">⭐</span>
+                <span>Share your travel experiences</span>
+            </div>
+        </div>
+        
+        <p>Ready to start your adventure? Visit our website to explore our latest packages and book your dream trip!</p>
+        
+        <div class="footer">
+            <p>Happy Travels!</p>
+            <p><strong>Dubai Travel Agency Team</strong></p>
+            <p><small>This is an automated email. Please do not reply to this message.</small></p>
+        </div>
+    </div>
+</body>
+</html>
+

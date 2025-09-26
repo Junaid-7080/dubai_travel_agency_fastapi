@@ -1,0 +1,58 @@
+# ===== docker-compose.yml =====
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: dubai_travel
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - dubai_travel_network
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    networks:
+      - dubai_travel_network
+
+  api:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: postgresql://postgres:password@db:5432/dubai_travel
+      REDIS_URL: redis://redis:6379
+    depends_on:
+      - db
+      - redis
+    volumes:
+      - ./uploads:/app/uploads
+    networks:
+      - dubai_travel_network
+
+  celery:
+    build: .
+    command: celery -A services.celery_app worker --loglevel=info
+    environment:
+      DATABASE_URL: postgresql://postgres:password@db:5432/dubai_travel
+      REDIS_URL: redis://redis:6379
+    depends_on:
+      - db
+      - redis
+    networks:
+      - dubai_travel_network
+
+volumes:
+  postgres_data:
+
+networks:
+  dubai_travel_network:
+    driver: bridge
+

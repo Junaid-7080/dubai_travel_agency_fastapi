@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Booking Confirmation - Dubai Travel Agency</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            border-bottom: 3px solid #007bff;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        .header h1 {
+            color: #007bff;
+            margin: 0;
+            font-size: 28px;
+        }
+        .booking-details {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+        .detail-row:last-child {
+            border-bottom: none;
+        }
+        .label {
+            font-weight: bold;
+            color: #495057;
+        }
+        .value {
+            color: #007bff;
+            font-weight: 500;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #e9ecef;
+            color: #6c757d;
+        }
+        .contact-info {
+            background: #e7f3ff;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏜️ Dubai Travel Agency</h1>
+            <p>Your Adventure Starts Here!</p>
+        </div>
+        
+        <h2>✅ Booking Confirmed!</h2>
+        <p>Dear {{ user_name }},</p>
+        <p>Thank you for choosing Dubai Travel Agency! Your booking has been successfully confirmed.</p>
+        
+        <div class="booking-details">
+            <h3>📋 Booking Details</h3>
+            <div class="detail-row">
+                <span class="label">Reference Number:</span>
+                <span class="value">{{ booking_reference }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="label">Package:</span>
+                <span class="value">{{ package_title }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="label">Travel Date:</span>
+                <span class="value">{{ travel_date }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="label">Number of Travelers:</span>
+                <span class="value">{{ travelers_count }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="label">Total Amount:</span>
+                <span class="value">{{ total_price }} AED</span>
+            </div>
+            <div class="detail-row">
+                <span class="label">Payment Method:</span>
+                <span class="value">{{ payment_method|title }}</span>
+            </div>
+        </div>
+        
+        <div class="contact-info">
+            <h3>📞 Need Help?</h3>
+            <p><strong>Email:</strong> support@dubaitravel.com</p>
+            <p><strong>Phone:</strong> +971-4-XXX-XXXX</p>
+            <p><strong>WhatsApp:</strong> +971-50-XXX-XXXX</p>
+        </div>
+        
+        <p>We will contact you 24 hours before your travel date with pickup details and final instructions.</p>
+        
+        <div class="footer">
+            <p>Thank you for choosing Dubai Travel Agency!</p>
+            <p><small>This is an automated email. Please do not reply to this message.</small></p>
+        </div>
+    </div>
+</body>
+</html>
