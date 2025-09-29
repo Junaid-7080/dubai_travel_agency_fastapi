@@ -14,60 +14,70 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
 
-@router.post("/register", response_model=APIResponse)
-async def register_user(user_data: RegisterRequest, session: Session = Depends(get_session)):
-    """Register a new user"""
-    # Check if user already exists
-    statement = select(User).where(User.email == user_data.email)
-    existing_user = session.exec(statement).first()
-
-    if existing_user:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Email already registered"
-        )
-
-    # Create new user (role will default to CUSTOMER)
-    user = User(
-        name=user_data.name,
-        email=user_data.email,
-        mobile=user_data.mobile,
-        language=user_data.language,
-        password_hash=get_password_hash(user_data.password),
-        role=UserRole.CUSTOMER,  # Explicitly set as CUSTOMER
-        is_active=True,
-        email_verified=False,  # Regular users need to verify email
-        mobile_verified=False   # Regular users need to verify mobile
-    )
-
-    session.add(user)
-    session.commit()
-    session.refresh(user)
-
-    # Send welcome email (optional)
+@router.post("/register", response_model=APIResponse) 
+async def register_user(user_data: RegisterRequest, session: Session = Depends(get_session)): 
+    """Register a new user""" 
+    # Check if user already exists 
+    statement = select(User).where(User.email == user_data.email) 
+    existing_user = session.exec(statement).first() 
+ 
+    if existing_user: 
+        raise HTTPException( 
+            status_code=status.HTTP_400_BAD_REQUEST, 
+            detail="Email already registered" 
+        ) 
+ 
+    # Create new user with role from request or default to CUSTOMER
+    user = User( 
+        name=user_data.name, 
+        email=user_data.email, 
+        mobile=user_data.mobile, 
+        language=user_data.language, 
+        password_hash=get_password_hash(user_data.password), 
+        role=getattr(user_data, 'role', UserRole.CUSTOMER),  # Use role from request if provided
+        is_active=True, 
+        email_verified=False,  # Regular users need to verify email 
+        mobile_verified=False   # Regular users need to verify mobile 
+    ) 
+ 
+    session.add(user) 
+    
     try:
-        await notification_service.send_email(
-            user.email,
-            "Welcome to Dubai Travel Agency",
-            "welcome_email",
-            {"user_name": user.name, "user_language": user.language}
-        )
+        session.commit() 
+        session.refresh(user) 
     except Exception as e:
-        logger.warning(f"Failed to send welcome email: {e}")
-
-    return APIResponse(
-        success=True,
-        message="User registered successfully",
-        data={
-            "user_id": user.id,
-            "name": user.name,
-            "email": user.email,
-            "role": user.role,
-            "language": user.language,
-            "email_verified": user.email_verified,
-            "note": "Please check your email for verification instructions"
-        }
-    )
+        session.rollback()
+        logger.error(f"Database error during user registration: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Registration failed. Please try again."
+        )
+ 
+    # Send welcome email (optional) 
+    try: 
+        await notification_service.send_email( 
+            user.email, 
+            "Welcome to Dubai Travel Agency", 
+            "welcome_email", 
+            {"user_name": user.name, "user_language": user.language} 
+        ) 
+    except Exception as e: 
+        logger.warning(f"Failed to send welcome email to {user.email}: {e}") 
+ 
+    return APIResponse( 
+        success=True, 
+        message="User registered successfully", 
+        data={ 
+            "user_id": user.id, 
+            "name": user.name, 
+            "email": user.email, 
+            "role": user.role.value if hasattr(user.role, 'value') else user.role, 
+            "language": user.language, 
+            "email_verified": user.email_verified, 
+            "mobile_verified": user.mobile_verified,
+            "note": "Please check your email for verification instructions" 
+        } 
+    ) 
 # ---------------- Login User ----------------
 @router.post("/login", response_model=Token)
 async def login(user_data: LoginRequest, session: Session = Depends(get_session)):
@@ -92,15 +102,18 @@ async def login(user_data: LoginRequest, session: Session = Depends(get_session)
             detail="Account is deactivated"
         )
 
-    # (Optional) Check if email verification is required
-    if not user.email_verified:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Email not verified"
-        )
+    # Create access token with user role information
+    token_data = {
+        "sub": str(user.id),
+        "role": user.role.value if hasattr(user.role, 'value') else user.role,
+        "email": user.email
+    }
+    access_token = create_access_token(data=token_data)
 
-    # Create access token (use user.id as subject for uniqueness)
-    access_token = create_access_token(data={"sub": str(user.id)})
+    # Prepare warning message for unverified accounts
+    warning_message = None
+    if not user.email_verified:
+        warning_message = "Please verify your email to access all features"
 
     return Token(
         access_token=access_token,
@@ -109,11 +122,13 @@ async def login(user_data: LoginRequest, session: Session = Depends(get_session)
             "id": user.id,
             "name": user.name,
             "email": user.email,
-            "role": user.role,
-            "language": user.language
-        }
-    )
-
+            "role": user.role.value if hasattr(user.role, 'value') else user.role,
+            "language": user.language,
+            "email_verified": user.email_verified,
+            "mobile_verified": user.mobile_verified,
+            "is_active": user.is_active,
+            "warning": warning_message
+        })
 
 
 # ---------------- Request OTP ----------------
