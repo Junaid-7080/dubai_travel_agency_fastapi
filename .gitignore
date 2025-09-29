@@ -1,0 +1,30 @@
+# Python cache files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Database files
+*.sqlite3
+dubai_travel.db
+
+# Environment variables
+.env
+
+# Virtual environment
+venv/
+env/
+.venv/
+
+# Uploads / media
+uploads/
+
+# Pytest / coverage
+htmlcov/
+.coverage
+*.cover
+*.log
+pytest_cache/
+
+# Docker
+*.dockerignore
