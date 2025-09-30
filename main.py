@@ -15,6 +15,19 @@ app = FastAPI(
     redoc_url="/redoc"
 )
 
+
+@app.get("/health")
+async def health_check():
+    """Health check endpoint for Render"""
+    return {
+        "status": "healthy",
+        "service": "dubai-travel-agency"
+    }
+
+@app.get("/")
+async def root():
+    return {"message": "Dubai Travel Agency API"}
+
 # Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
