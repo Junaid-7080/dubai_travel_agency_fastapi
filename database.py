@@ -1,33 +1,17 @@
-from sqlmodel import SQLModel, create_engine, Session
-from config import settings
-from sqlalchemy.orm import sessionmaker, declarative_base
 import os
+from sqlalchemy import create_engine
 from dotenv import load_dotenv
 
-load_dotenv() # Load .env file if present
+# local dev-ക്ക് .env load ചെയ്യാം
+load_dotenv()
 
-DATABASE_URL = os.environ.get("DATABASE_URL")
+DATABASE_URL = os.getenv("DATABASE_URL")
 
-engine = create_engine(DATABASE_URL)
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-Base = declarative_base()
+if not DATABASE_URL:
+    raise ValueError("❌ DATABASE_URL set ചെയ്‌തില്ല. Render-ൽ check ചെയ്യുക.")
 
-# ✅ Create engine once
-engine = create_engine(
-    settings.database_url,
-    echo=True,  # shows SQL logs in console (remove in production)
-    future=True
-)
+# postgres:// issue fix
+if DATABASE_URL.startswith("postgres://"):
+    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql+psycopg2://", 1)
 
-def create_db_and_tables():
-    """Initialize database and create tables."""
-    SQLModel.metadata.create_all(engine)
-
-def get_session():
-    """Provide a database session."""
-    with Session(engine) as session:
-        yield session
-
-# ✅ Ensure upload directory exists
-if not os.path.exists(settings.upload_dir):
-    os.makedirs(settings.upload_dir, exist_ok=True)
+engine = create_engine(DATABASE_URL, echo=True, future=True)

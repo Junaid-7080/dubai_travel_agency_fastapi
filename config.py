@@ -5,7 +5,7 @@ import os
 class Settings(BaseSettings):
     # Use SQLite for development by default
     # To use PostgreSQL, set DATABASE_URL environment variable to: postgresql://postgres:password@localhost:5432/dubai_travel
-    database_url: str = "sqlite:///./dubai_travel.db"
+    database_url: str = "postgresql+psycopg2://dubai_travel_agency:dubai_traval@render:5432/dubai_travel_db"
     secret_key: str = "dubai_travel_agency"
     algorithm: str = "HS256"
     access_token_expire_minutes: int = 30

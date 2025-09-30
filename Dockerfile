@@ -1,25 +1,26 @@
-FROM python:3.11-slim
+# Base image
+FROM python:3.12-slim
 
+# Create a non-root user
+RUN useradd -m myuser
+USER myuser
+
+# Set work directory
 WORKDIR /app
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y \
-    gcc \
-    postgresql-client \
-    && rm -rf /var/lib/apt/lists/*
+# Copy project files
+COPY --chown=myuser:myuser . .
 
-# Copy requirements and install Python dependencies
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+# Upgrade pip & install dependencies
+RUN python -m pip install --upgrade pip
+RUN pip install -r requirements.txt
 
-# Copy application code
-COPY . .
-
-# Create upload directory
+# Make necessary directories
 RUN mkdir -p uploads/packages
 
 # Expose port
 EXPOSE 8000
 
-# Run the application
+# Run app
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+
