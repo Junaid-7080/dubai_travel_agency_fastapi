@@ -1,5 +1,10 @@
 import os
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, MetaData
+from sqlalchemy.orm import declarative_base
+
+# Base for models
+Base = declarative_base()
+metadata = Base.metadata
 
 # Get database URL from environment
 DATABASE_URL = os.getenv("DATABASE_URL")
@@ -12,3 +17,7 @@ if DATABASE_URL.startswith("postgres://"):
     DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
 
 engine = create_engine(DATABASE_URL)
+
+# Function to create tables
+def create_db_and_tables():
+    metadata.create_all(engine)
