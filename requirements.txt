@@ -13,3 +13,4 @@ twilio
 jinja2
 Pillow
 python-multipart
+stripe
