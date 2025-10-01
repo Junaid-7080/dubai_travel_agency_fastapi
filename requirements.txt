@@ -10,3 +10,4 @@ requests
 pydantic-settings
 pydantic[email]
 twilio
+jinja2
