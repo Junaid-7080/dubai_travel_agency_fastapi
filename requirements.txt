@@ -9,3 +9,4 @@ python-jose[cryptography]
 requests
 pydantic-settings
 pydantic[email]
+twilio
