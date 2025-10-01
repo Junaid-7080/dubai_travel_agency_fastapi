@@ -12,3 +12,4 @@ pydantic[email]
 twilio
 jinja2
 Pillow
+python-multipart
