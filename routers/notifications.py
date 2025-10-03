@@ -5,7 +5,7 @@ from typing import List, Optional
 from datetime import datetime
 import json
 
-from database import get_db
+from database import get_session
 from models import User, Notification, NotificationType, NotificationStatus
 from schemas import (
     NotificationCreate, 
@@ -28,7 +28,7 @@ async def get_user_notifications(
     page: int = Query(1, ge=1),
     size: int = Query(20, ge=1, le=100),
     current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_session)
 ):
     """Get notifications for the current user"""
     notification_service = NotificationService(db)
@@ -43,7 +43,7 @@ async def get_user_notifications(
 @router.get("/unread-count", response_model=dict)
 async def get_unread_count(
     current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_session)
 ):
     """Get count of unread notifications"""
     notification_service = NotificationService(db)
@@ -53,7 +53,7 @@ async def get_unread_count(
 @router.get("/stats", response_model=NotificationStats)
 async def get_notification_stats(
     current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_session)
 ):
     """Get notification statistics for the current user"""
     # Get total notifications
@@ -102,7 +102,7 @@ async def get_notification_stats(
 async def create_notification(
     notification_data: NotificationCreate,
     current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_session)
 ):
     """Create a new notification (admin only)"""
     if current_user.role not in ["admin", "super_admin"]:
@@ -123,7 +123,7 @@ async def create_broadcast_notification(
     notification_type: NotificationType = NotificationType.ADMIN_ANNOUNCEMENT,
     priority: int = 2,
     current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_session)
 ):
     """Create broadcast notification (admin only)"""
     if current_user.role not in ["admin", "super_admin"]:
@@ -146,7 +146,7 @@ async def create_broadcast_notification(
 async def mark_notification_as_read(
     notification_id: int,
     current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_session)
 ):
     """Mark a notification as read"""
     notification_service = NotificationService(db)
@@ -166,7 +166,7 @@ async def mark_notification_as_read(
 @router.put("/mark-all-read", response_model=APIResponse)
 async def mark_all_notifications_as_read(
     current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_session)
 ):
     """Mark all notifications as read for the current user"""
     notification_service = NotificationService(db)
@@ -181,7 +181,7 @@ async def mark_all_notifications_as_read(
 async def bulk_update_notifications(
     update_data: BulkNotificationUpdate,
     current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_session)
 ):
     """Bulk update notification status"""
     updated_count = 0
@@ -205,7 +205,7 @@ async def bulk_update_notifications(
 async def delete_notification(
     notification_id: int,
     current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_session)
 ):
     """Delete a notification (mark as archived)"""
     notification = db.get(Notification, notification_id)
@@ -231,7 +231,7 @@ async def get_all_notifications_admin(
     page: int = Query(1, ge=1),
     size: int = Query(20, ge=1, le=100),
     current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_session)
 ):
     """Get all notifications (admin only)"""
     if current_user.role not in ["admin", "super_admin"]:
@@ -276,7 +276,7 @@ async def get_all_notifications_admin(
 async def send_notification(
     notification_id: int,
     current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_session)
 ):
     """Send a notification (admin only)"""
     if current_user.role not in ["admin", "super_admin"]:

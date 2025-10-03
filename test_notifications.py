@@ -6,7 +6,7 @@ Run this script to test the notification functionality
 
 import asyncio
 from sqlmodel import Session, create_engine, SQLModel
-from database import get_db
+from database import get_session
 from services.notification_helper import NotificationHelper
 from services.notification_service import NotificationService
 from models import User, Booking, Package, NotificationType

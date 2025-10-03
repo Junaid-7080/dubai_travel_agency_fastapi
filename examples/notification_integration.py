@@ -5,12 +5,12 @@ Example of how to integrate notifications into your existing endpoints
 
 from fastapi import Depends
 from sqlmodel import Session
-from database import get_db
+from database import get_session
 from services.notification_helper import NotificationHelper
 from models import Booking, Payment, User
 
 # Example: Add to your booking confirmation endpoint
-async def confirm_booking_example(booking_id: int, db: Session = Depends(get_db)):
+async def confirm_booking_example(booking_id: int, db: Session = Depends(get_session)):
     """Example of how to add notification to booking confirmation"""
     
     # Your existing booking confirmation logic
@@ -29,7 +29,7 @@ async def confirm_booking_example(booking_id: int, db: Session = Depends(get_db)
     return {"message": "Booking confirmed", "booking": booking}
 
 # Example: Add to your payment success endpoint
-async def process_payment_success_example(payment_id: int, db: Session = Depends(get_db)):
+async def process_payment_success_example(payment_id: int, db: Session = Depends(get_session)):
     """Example of how to add notification to payment success"""
     
     # Your existing payment processing logic
@@ -48,7 +48,7 @@ async def process_payment_success_example(payment_id: int, db: Session = Depends
     return {"message": "Payment processed", "payment": payment}
 
 # Example: Add to your user registration endpoint
-async def register_user_example(user_data: dict, db: Session = Depends(get_db)):
+async def register_user_example(user_data: dict, db: Session = Depends(get_session)):
     """Example of how to add welcome notification to user registration"""
     
     # Your existing user registration logic
@@ -89,7 +89,7 @@ async def send_admin_announcement_example(
     title_ar: str, 
     message_en: str,
     message_ar: str,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_session)
 ):
     """Example of how to send admin announcements"""
     
@@ -107,7 +107,7 @@ async def send_admin_announcement_example(
 async def send_weather_update_example(
     booking_id: int,
     weather_info: str,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_session)
 ):
     """Example of how to send weather updates"""
     
@@ -124,7 +124,7 @@ async def send_weather_update_example(
 async def send_package_update_example(
     booking_id: int,
     update_details: str,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_session)
 ):
     """Example of how to send package updates"""
     
