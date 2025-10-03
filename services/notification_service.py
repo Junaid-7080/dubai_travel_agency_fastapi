@@ -58,6 +58,7 @@ class NotificationService:
             created_at=notification.created_at,
             data=json.loads(notification.data) if notification.data else None
         )
+
     
     async def get_user_notifications(
         self, 

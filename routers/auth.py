@@ -9,6 +9,7 @@ from auth import create_access_token, get_password_hash, verify_password, genera
 from services.notification_service import notification_service
 import logging
 
+
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
