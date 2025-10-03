@@ -7,9 +7,6 @@ from database import create_db_and_tables
 from routers import auth, packages, bookings, payments, reviews, admin, public, notifications
 import uvicorn
 import os
-# Your existing imports
-from routers.auth import router as auth_router
-from routers.admin import admin_router  # Add this import
 
 # Create FastAPI app
 app = FastAPI(
