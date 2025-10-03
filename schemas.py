@@ -1,15 +1,15 @@
 # ===== schemas.py =====
-from dataclasses import Field
 from pydantic import BaseModel, EmailStr
 from typing import Optional, List, Dict, Any
 from datetime import datetime
-from models import Language, BookingStatus, PaymentStatus, PaymentMethod, UserRole
+from models import Language, BookingStatus, PaymentStatus, PaymentMethod, NotificationType, NotificationStatus
 
 # Authentication Schemas
 class Token(BaseModel):
     access_token: str
-    token_type: str
-    user: dict
+    token_type: str = "bearer"
+    expires_in: Optional[int] = None  # Add this
+    user: Dict[str, Any]
 
 class LoginRequest(BaseModel):
     email: EmailStr
@@ -18,11 +18,9 @@ class LoginRequest(BaseModel):
 class RegisterRequest(BaseModel):
     name: str
     email: EmailStr
-    mobile: Optional[str]
+    mobile: Optional[str] = None
     password: str
-    language: str = "en"
-    role: Optional[UserRole] = UserRole.CUSTOMER   # 👈 default to CUSTOMER
-
+    language: Language = Language.EN
 
 class OTPRequest(BaseModel):
     identifier: str  # email or mobile
@@ -99,6 +97,56 @@ class UserResponse(BaseModel):
     email_verified: bool = False
     mobile_verified: bool = False
     created_at: datetime
+
+# Notification Schemas
+class NotificationCreate(BaseModel):
+    title_en: str
+    title_ar: str
+    message_en: str
+    message_ar: str
+    notification_type: NotificationType
+    priority: int = 1
+    user_id: Optional[int] = None  # None for broadcast
+    data: Optional[Dict[str, Any]] = None
+    send_immediately: bool = True
+
+class NotificationResponse(BaseModel):
+    id: int
+    title_en: str
+    title_ar: str
+    message_en: str
+    message_ar: str
+    notification_type: NotificationType
+    priority: int
+    user_id: Optional[int]
+    status: NotificationStatus
+    sent_at: Optional[datetime]
+    read_at: Optional[datetime]
+    created_at: datetime
+    data: Optional[Dict[str, Any]] = None
+
+class NotificationUpdate(BaseModel):
+    status: Optional[NotificationStatus] = None
+    read_at: Optional[datetime] = None
+
+class NotificationFilter(BaseModel):
+    notification_type: Optional[NotificationType] = None
+    status: Optional[NotificationStatus] = None
+    priority: Optional[int] = None
+    user_id: Optional[int] = None
+    page: int = 1
+    size: int = 20
+
+class NotificationStats(BaseModel):
+    total_notifications: int
+    unread_count: int
+    read_count: int
+    archived_count: int
+    by_type: Dict[str, int]
+
+class BulkNotificationUpdate(BaseModel):
+    notification_ids: List[int]
+    status: NotificationStatus
 
 # Response Schemas
 class APIResponse(BaseModel):

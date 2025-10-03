@@ -4,10 +4,7 @@ from datetime import datetime
 from enum import Enum
 import json
 
-class UserRole(str, Enum):
-    CUSTOMER = "customer"
-    ADMIN = "admin"
-    STAFF = "staff"
+
 
 class BookingStatus(str, Enum):
     PENDING = "pending"
@@ -30,6 +27,12 @@ class Language(str, Enum):
     EN = "en"
     AR = "ar"
 
+class UserRole(str, Enum):
+    CUSTOMER = "customer"
+    ADMIN = "admin"
+    STAFF = "staff"
+    SUPER_ADMIN = "super_admin"
+
 # ===== User Model =====
 class UserBase(SQLModel):
     name: str
@@ -38,6 +41,8 @@ class UserBase(SQLModel):
     language: Language = Language.EN
     role: UserRole = UserRole.CUSTOMER
 
+# models.py - Add these fields to your existing User model if not present:
+
 class User(UserBase, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     password_hash: str
@@ -45,11 +50,20 @@ class User(UserBase, table=True):
     email_verified: bool = False
     mobile_verified: bool = False
     created_at: datetime = Field(default_factory=datetime.utcnow)
-    updated_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None  # Add this if missing
+    last_login: Optional[datetime] = None   # Add this if missing
     
     # Relationships
     bookings: List["Booking"] = Relationship(back_populates="user")
     reviews: List["Review"] = Relationship(back_populates="user")
+    notifications: List["Notification"] = Relationship(back_populates="user")
+
+# Also update your UserRole enum to include admin roles:
+class UserRole(str, Enum):
+    CUSTOMER = "customer"
+    ADMIN = "admin"
+    STAFF = "staff"
+    SUPER_ADMIN = "super_admin"  # Add this
 
 class UserCreate(UserBase):
     password: str
@@ -231,3 +245,57 @@ class OTP(SQLModel, table=True):
     expires_at: datetime
     verified: bool = False
     created_at: datetime = Field(default_factory=datetime.utcnow)
+
+# ===== Notification Types =====
+class NotificationType(str, Enum):
+    BOOKING_CONFIRMED = "booking_confirmed"
+    BOOKING_CANCELLED = "booking_cancelled"
+    PAYMENT_SUCCESS = "payment_success"
+    PAYMENT_FAILED = "payment_failed"
+    PACKAGE_UPDATE = "package_update"
+    REVIEW_ADDED = "review_added"
+    ADMIN_ANNOUNCEMENT = "admin_announcement"
+    REMINDER = "reminder"
+    PROMOTION = "promotion"
+
+class NotificationStatus(str, Enum):
+    UNREAD = "unread"
+    READ = "read"
+    ARCHIVED = "archived"
+
+# ===== Notification Model =====
+class NotificationBase(SQLModel):
+    title_en: str
+    title_ar: str
+    message_en: str
+    message_ar: str
+    notification_type: NotificationType
+    priority: int = 1  # 1=low, 2=medium, 3=high, 4=urgent
+    data: Optional[str] = None  # JSON data for additional info
+
+class Notification(NotificationBase, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    user_id: Optional[int] = Field(foreign_key="user.id", default=None)  # None for broadcast notifications
+    status: NotificationStatus = NotificationStatus.UNREAD
+    sent_at: Optional[datetime] = None
+    read_at: Optional[datetime] = None
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    
+    # Relationships
+    user: Optional[User] = Relationship(back_populates="notifications")
+
+class NotificationCreate(NotificationBase):
+    user_id: Optional[int] = None
+    send_immediately: bool = True
+
+class NotificationResponse(NotificationBase):
+    id: int
+    user_id: Optional[int]
+    status: NotificationStatus
+    sent_at: Optional[datetime]
+    read_at: Optional[datetime]
+    created_at: datetime
+
+class NotificationUpdate(SQLModel):
+    status: Optional[NotificationStatus] = None
+    read_at: Optional[datetime] = None
