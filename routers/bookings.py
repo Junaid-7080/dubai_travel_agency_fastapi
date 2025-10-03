@@ -7,7 +7,6 @@ from models import Booking, BookingCreate, BookingResponse, Package, User, Booki
 from schemas import BookingRequest, APIResponse, TravelerInfo
 from database import get_session
 from auth import get_current_user, get_admin_user, generate_booking_reference
-from services.notification_service import notification_service
 import json
 
 router = APIRouter(prefix="/bookings", tags=["Bookings"])
@@ -230,7 +229,10 @@ async def cancel_booking(
             "package_title": package.title_en if package else "Unknown Package"
         }
         
-        await notification_service.send_email(
+        # Create a new notification service instance with the current session
+        from services.notification_service import NotificationService
+        notification_service_instance = NotificationService(session)
+        await notification_service_instance.send_email(
             current_user.email,
             "Booking Cancelled - Dubai Travel Agency",
             "booking_cancellation",

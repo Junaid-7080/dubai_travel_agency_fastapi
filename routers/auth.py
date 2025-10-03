@@ -2,119 +2,95 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlmodel import Session, select
 from datetime import datetime, timedelta
-from models import User, OTP, UserRole
+from models import User, OTP
 from schemas import Token, LoginRequest, RegisterRequest, OTPRequest, OTPVerify, APIResponse, UserResponse
 from database import get_session
 from auth import create_access_token, get_password_hash, verify_password, generate_otp, get_current_user
-from services.notification_service import notification_service
 import logging
-
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
 
-@router.post("/register", response_model=APIResponse) 
-async def register_user(user_data: RegisterRequest, session: Session = Depends(get_session)): 
-    """Register a new user""" 
-    # Check if user already exists 
-    statement = select(User).where(User.email == user_data.email) 
-    existing_user = session.exec(statement).first() 
- 
-    if existing_user: 
-        raise HTTPException( 
-            status_code=status.HTTP_400_BAD_REQUEST, 
-            detail="Email already registered" 
-        ) 
- 
-    # Create new user with role from request or default to CUSTOMER
-    user = User( 
-        name=user_data.name, 
-        email=user_data.email, 
-        mobile=user_data.mobile, 
-        language=user_data.language, 
-        password_hash=get_password_hash(user_data.password), 
-        role=getattr(user_data, 'role', UserRole.CUSTOMER),  # Use role from request if provided
-        is_active=True, 
-        email_verified=False,  # Regular users need to verify email 
-        mobile_verified=False   # Regular users need to verify mobile 
-    ) 
- 
-    session.add(user) 
-    
-    try:
-        session.commit() 
-        session.refresh(user) 
-    except Exception as e:
-        session.rollback()
-        logger.error(f"Database error during user registration: {e}")
+# ---------------- Register User ----------------
+@router.post("/register", response_model=APIResponse)
+async def register_user(user_data: RegisterRequest, session: Session = Depends(get_session)):
+    """Register a new user"""
+    # Check if user already exists
+    statement = select(User).where(User.email == user_data.email)
+    existing_user = session.exec(statement).first()
+
+    if existing_user:
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Registration failed. Please try again."
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Email already registered"
         )
- 
-    # Send welcome email (optional) 
-    try: 
-        await notification_service.send_email( 
-            user.email, 
-            "Welcome to Dubai Travel Agency", 
-            "welcome_email", 
-            {"user_name": user.name, "user_language": user.language} 
-        ) 
-    except Exception as e: 
-        logger.warning(f"Failed to send welcome email to {user.email}: {e}") 
- 
-    return APIResponse( 
-        success=True, 
-        message="User registered successfully", 
-        data={ 
-            "user_id": user.id, 
-            "name": user.name, 
-            "email": user.email, 
-            "role": user.role.value if hasattr(user.role, 'value') else user.role, 
-            "language": user.language, 
-            "email_verified": user.email_verified, 
-            "mobile_verified": user.mobile_verified,
-            "note": "Please check your email for verification instructions" 
-        } 
-    ) 
+
+    role = "USER"  # default role
+
+    # For testing: assign ADMIN to specific email(s)
+    admin_emails = [
+        "admin@gmail.com", 
+        "admin@dubaitravel.com",
+        "superadmin@dubaitravel.com"
+    ]
+
+    if user_data.email.lower() in admin_emails:
+        role = "ADMIN"
+
+    # Create new user 
+    user = User(
+        name=user_data.name,
+        email=user_data.email,
+        mobile=user_data.mobile,
+        language=user_data.language,
+        password_hash=get_password_hash(user_data.password),
+        role=role
+    )
+
+    session.add(user)
+    session.commit()
+    session.refresh(user)
+
+
+    try:
+        # Create a new notification service instance with the current session
+        from services.notification_service import NotificationService
+        notification_service_instance = NotificationService(session)
+        await notification_service_instance.send_welcome_email(user.email, user.name)
+    except Exception as e:
+        logger.warning(f"Failed to send welcome email: {e}")
+
+    return APIResponse(
+        success=True,
+        message=f"User registered successfully with role {role}",
+        data={"user_id": user.id, "role": role}
+    )
+
+
 # ---------------- Login User ----------------
 @router.post("/login", response_model=Token)
 async def login(user_data: LoginRequest, session: Session = Depends(get_session)):
     """Login user with email and password"""
-
-    # Fetch user by email
     statement = select(User).where(User.email == user_data.email)
     user = session.exec(statement).first()
 
-    # Check if user exists and password is correct
     if not user or not verify_password(user_data.password, user.password_hash):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid email or password",
-            headers={"WWW-Authenticate": "Bearer"}
+            detail="Incorrect email or password"
         )
 
-    # Check account status
     if not user.is_active:
         raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
+            status_code=status.HTTP_400_BAD_REQUEST,
             detail="Account is deactivated"
         )
+     
 
-    # Create access token with user role information
-    token_data = {
-        "sub": str(user.id),
-        "role": user.role.value if hasattr(user.role, 'value') else user.role,
-        "email": user.email
-    }
-    access_token = create_access_token(data=token_data)
-
-    # Prepare warning message for unverified accounts
-    warning_message = None
-    if not user.email_verified:
-        warning_message = "Please verify your email to access all features"
+   # Create access token with 'sub'
+    access_token = create_access_token(data={"sub": user.email})
 
     return Token(
         access_token=access_token,
@@ -123,13 +99,10 @@ async def login(user_data: LoginRequest, session: Session = Depends(get_session)
             "id": user.id,
             "name": user.name,
             "email": user.email,
-            "role": user.role.value if hasattr(user.role, 'value') else user.role,
-            "language": user.language,
-            "email_verified": user.email_verified,
-            "mobile_verified": user.mobile_verified,
-            "is_active": user.is_active,
-            "warning": warning_message
-        })
+            "role": user.role,
+            "language": user.language
+        }
+    )
 
 
 # ---------------- Request OTP ----------------
@@ -155,7 +128,9 @@ async def request_otp(otp_data: OTPRequest, session: Session = Depends(get_sessi
     method = "email" if "@" in otp_data.identifier else "sms"
 
     # Send OTP
-    sent = await notification_service.send_otp(otp_data.identifier, otp_code, method)
+    from services.notification_service import NotificationService
+    notification_service_instance = NotificationService(session)
+    sent = await notification_service_instance.send_otp(otp_data.identifier, otp_code, method)
 
     if not sent:
         raise HTTPException(

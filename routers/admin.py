@@ -1,12 +1,31 @@
-# ===== routers/admin.py =====
-from fastapi import APIRouter, Depends, HTTPException, status, Query
-from sqlmodel import Session, select, func
-from typing import List, Optional
-from datetime import datetime, timedelta
-from models import User, Package, Booking, Payment, Review, BookingStatus, PaymentStatus, UserRole
-from schemas import DashboardStats, BookingUpdateStatus, APIResponse, UserRoleUpdate
+# routers/admin.py - Complete Admin System
+from fastapi import APIRouter, Depends, HTTPException, status, Query, BackgroundTasks
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from sqlmodel import Session, select, func, and_, or_, desc, asc
+from datetime import datetime, timedelta, date
+from typing import List, Optional, Dict, Any, Union
+import logging
+from pydantic import BaseModel, Field, EmailStr
+from enum import Enum
+
+# Import your existing models and dependencies
 from database import get_session
-from auth import get_admin_user
+from models import User, Package, Booking, Payment, Review, OTP, BookingStatus, PaymentStatus, UserRole
+from auth import get_current_user, get_admin_user, get_password_hash, verify_password
+from schemas import APIResponse
+
+# Admin-specific models
+class DashboardStats(BaseModel):
+    total_bookings: int
+    total_revenue: float
+    pending_bookings: int
+    active_packages: int
+    total_users: int
+    bookings_today: int
+    revenue_today: float
+
+class BookingUpdateStatus(BaseModel):
+    status: BookingStatus
 
 router = APIRouter(prefix="/admin", tags=["Admin"])
 
@@ -321,48 +340,3 @@ async def get_bookings_report(
             "end_date": end_date
         }
     }
-
-@router.put("/users/{user_id}/role", response_model=APIResponse)
-async def update_user_role(
-    user_id: int,
-    role_data: UserRoleUpdate,
-    current_user = Depends(get_admin_user),
-    session: Session = Depends(get_session)
-):
-    """Update user role (admin only)"""
-    # Check if user exists
-    statement = select(User).where(User.id == user_id)
-    user = session.exec(statement).first()
-    
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="User not found"
-        )
-    
-    # Validate role
-    try:
-        new_role = UserRole(role_data.role)
-    except ValueError:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Invalid role. Must be one of: customer, admin, staff"
-        )
-    
-    # Prevent admin from changing their own role
-    if current_user.id == user_id:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Cannot change your own role"
-        )
-    
-    # Update user role
-    user.role = new_role
-    user.updated_at = datetime.utcnow()
-    session.commit()
-    
-    return APIResponse(
-        success=True,
-        message=f"User role updated to {new_role.value}",
-        data={"user_id": user.id, "new_role": new_role.value}
-    )

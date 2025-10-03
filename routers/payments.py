@@ -6,7 +6,6 @@ from schemas import PaymentRequest, PaymentConfirmation, APIResponse
 from database import get_session
 from auth import get_current_user
 from services.payment_service import payment_service
-from services.notification_service import notification_service
 from datetime import datetime
 import json
 

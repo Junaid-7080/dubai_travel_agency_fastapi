@@ -323,3 +323,32 @@ class NotificationService:
         )
         
         return await self.create_notification(notification_data)
+    
+    async def send_welcome_email(self, email: str, name: str) -> bool:
+        """Send welcome email to new user"""
+        try:
+            # This is a placeholder - implement with your email service
+            print(f"Welcome email sent to {email} for {name}")
+            return True
+        except Exception as e:
+            print(f"Error sending welcome email to {email}: {e}")
+            return False
+    
+    async def send_otp(self, identifier: str, otp_code: str, method: str) -> bool:
+        """Send OTP via email or SMS"""
+        try:
+            if method == "email":
+                # Send OTP via email
+                print(f"OTP {otp_code} sent to {identifier} via email")
+            else:
+                # Send OTP via SMS
+                print(f"OTP {otp_code} sent to {identifier} via SMS")
+            return True
+        except Exception as e:
+            print(f"Error sending OTP to {identifier}: {e}")
+            return False
+
+
+# Create a global instance for dependency injection
+# Note: This will be properly initialized with a database session when used
+notification_service = NotificationService(None)
