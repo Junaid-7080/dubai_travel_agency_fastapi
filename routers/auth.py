@@ -2,7 +2,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlmodel import Session, select
 from datetime import datetime, timedelta
-from models import User, OTP
+from models import User, OTP, UserRole
 from schemas import Token, LoginRequest, RegisterRequest, OTPRequest, OTPVerify, APIResponse, UserResponse
 from database import get_session
 from auth import create_access_token, get_password_hash, verify_password, generate_otp, get_current_user
@@ -27,7 +27,7 @@ async def register_user(user_data: RegisterRequest, session: Session = Depends(g
             detail="Email already registered"
         )
 
-    role = "USER"  # default role
+    role = UserRole.CUSTOMER  # default role
 
     # For testing: assign ADMIN to specific email(s)
     admin_emails = [
@@ -37,7 +37,7 @@ async def register_user(user_data: RegisterRequest, session: Session = Depends(g
     ]
 
     if user_data.email.lower() in admin_emails:
-        role = "ADMIN"
+        role = UserRole.ADMIN
 
     # Create new user 
     user = User(

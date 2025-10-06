@@ -4,7 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.openapi.utils import get_openapi
 from database import create_db_and_tables
-from routers import auth, packages, bookings, payments, reviews, admin, public, notifications
+from routers import auth, packages, bookings, payments, reviews, admin, public, notifications, customers
 import uvicorn
 import os
 
@@ -44,6 +44,7 @@ try:
     app.include_router(admin.router)
     app.include_router(public.router)
     app.include_router(notifications.router)
+    app.include_router(customers.router)
 except Exception as e:
     print(f"⚠️ Error including routers: {e}")
 

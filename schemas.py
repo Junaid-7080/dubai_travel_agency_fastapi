@@ -148,6 +148,70 @@ class BulkNotificationUpdate(BaseModel):
     notification_ids: List[int]
     status: NotificationStatus
 
+# Customer Schemas
+class CustomerCreate(BaseModel):
+    name: str
+    email: str
+    mobile: str
+    nationality: str
+    passport_number: str
+    passport_expiry: datetime
+    date_of_birth: datetime
+    gender: str  # "male", "female", "other"
+    address: Optional[str] = None
+    emergency_contact_name: Optional[str] = None
+    emergency_contact_phone: Optional[str] = None
+    language: Language = Language.EN
+
+class CustomerUpdate(BaseModel):
+    name: Optional[str] = None
+    email: Optional[str] = None
+    mobile: Optional[str] = None
+    nationality: Optional[str] = None
+    passport_number: Optional[str] = None
+    passport_expiry: Optional[datetime] = None
+    date_of_birth: Optional[datetime] = None
+    gender: Optional[str] = None
+    address: Optional[str] = None
+    emergency_contact_name: Optional[str] = None
+    emergency_contact_phone: Optional[str] = None
+    language: Optional[Language] = None
+    is_active: Optional[bool] = None
+
+class CustomerResponse(BaseModel):
+    id: int
+    name: str
+    email: str
+    mobile: str
+    nationality: str
+    passport_number: str
+    passport_expiry: datetime
+    date_of_birth: datetime
+    gender: str
+    address: Optional[str] = None
+    emergency_contact_name: Optional[str] = None
+    emergency_contact_phone: Optional[str] = None
+    language: Language
+    is_active: bool
+    user_id: Optional[int] = None
+    created_at: datetime
+    updated_at: Optional[datetime] = None
+
+class CustomerFilter(BaseModel):
+    search: Optional[str] = None
+    nationality: Optional[str] = None
+    is_active: Optional[bool] = None
+    language: Optional[Language] = None
+    page: int = 1
+    size: int = 20
+
+class CustomerStats(BaseModel):
+    total_customers: int
+    active_customers: int
+    inactive_customers: int
+    customers_by_nationality: Dict[str, int]
+    customers_by_language: Dict[str, int]
+
 # Response Schemas
 class APIResponse(BaseModel):
     success: bool

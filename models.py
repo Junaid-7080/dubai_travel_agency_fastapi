@@ -57,6 +57,7 @@ class User(UserBase, table=True):
     bookings: List["Booking"] = Relationship(back_populates="user")
     reviews: List["Review"] = Relationship(back_populates="user")
     notifications: List["Notification"] = Relationship(back_populates="user")
+    customer_profile: Optional["Customer"] = Relationship(back_populates="user")
 
 # Also update your UserRole enum to include admin roles:
 class UserRole(str, Enum):
@@ -145,6 +146,7 @@ class BookingBase(SQLModel):
 class Booking(BookingBase, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     user_id: int = Field(foreign_key="user.id")
+    customer_id: Optional[int] = Field(foreign_key="customer.id", default=None)
     package_id: int = Field(foreign_key="package.id")
     total_price: float
     status: BookingStatus = BookingStatus.PENDING
@@ -155,6 +157,7 @@ class Booking(BookingBase, table=True):
     
     # Relationships
     user: User = Relationship(back_populates="bookings")
+    customer: Optional["Customer"] = Relationship(back_populates="bookings")
     package: Package = Relationship(back_populates="bookings")
     payments: List["Payment"] = Relationship(back_populates="booking")
 
@@ -299,3 +302,61 @@ class NotificationResponse(NotificationBase):
 class NotificationUpdate(SQLModel):
     status: Optional[NotificationStatus] = None
     read_at: Optional[datetime] = None
+
+# ===== Customer Model =====
+class CustomerBase(SQLModel):
+    name: str
+    email: str
+    mobile: str
+    nationality: str
+    passport_number: str
+    passport_expiry: datetime
+    date_of_birth: datetime
+    gender: str  # "male", "female", "other"
+    address: Optional[str] = None
+    emergency_contact_name: Optional[str] = None
+    emergency_contact_phone: Optional[str] = None
+    language: Language = Language.EN
+    is_active: bool = True
+
+class Customer(CustomerBase, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    user_id: Optional[int] = Field(foreign_key="user.id", default=None)  # Link to User if registered
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: Optional[datetime] = None
+    
+    # Relationships
+    user: Optional[User] = Relationship(back_populates="customer_profile")
+    bookings: List["Booking"] = Relationship(back_populates="customer")
+
+class CustomerCreate(CustomerBase):
+    pass
+
+class CustomerUpdate(SQLModel):
+    name: Optional[str] = None
+    email: Optional[str] = None
+    mobile: Optional[str] = None
+    nationality: Optional[str] = None
+    passport_number: Optional[str] = None
+    passport_expiry: Optional[datetime] = None
+    date_of_birth: Optional[datetime] = None
+    gender: Optional[str] = None
+    address: Optional[str] = None
+    emergency_contact_name: Optional[str] = None
+    emergency_contact_phone: Optional[str] = None
+    language: Optional[Language] = None
+    is_active: Optional[bool] = None
+
+class CustomerResponse(CustomerBase):
+    id: int
+    user_id: Optional[int]
+    created_at: datetime
+    updated_at: Optional[datetime]
+
+class CustomerFilter(SQLModel):
+    search: Optional[str] = None
+    nationality: Optional[str] = None
+    is_active: Optional[bool] = None
+    language: Optional[Language] = None
+    page: int = 1
+    size: int = 20
